@@ -3,32 +3,32 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Endless Canvas | Infinite Sticky-Note Board',
+  title: 'Endless Notes | Infinite Sticky-Note Board',
   description: 'An infinite digital canvas for brainstorming and organization. Create, drag, and zoom sticky notes with a seamless grid background.',
   keywords: ['infinite canvas', 'sticky notes', 'brainstorming', 'digital whiteboard', 'productivity', 'nextjs', 'react'],
-  authors: [{ name: 'Endless Canvas Team' }],
-  creator: 'Endless Canvas',
-  publisher: 'Endless Canvas',
+  authors: [{ name: 'Nel Sokchhunly' }],
+  creator: 'Nel Sokchhunly',
+  publisher: 'Nel Sokchhunly',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://endless-canvas.vercel.app'), // Update this with your actual production URL
+  metadataBase: new URL('https://endless-notes.vercel.app'), // Update this with your actual production URL
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Endless Canvas | Infinite Sticky-Note Board',
+    title: 'Endless Notes | Infinite Sticky-Note Board',
     description: 'An infinite digital canvas for brainstorming and organization. Create, drag, and zoom sticky notes.',
-    url: 'https://endless-canvas.vercel.app',
-    siteName: 'Endless Canvas',
+    url: 'https://endless-notes.vercel.app',
+    siteName: 'Endless Notes',
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Endless Canvas | Infinite Sticky-Note Board',
+    title: 'Endless Notes | Infinite Sticky-Note Board',
     description: 'An infinite digital canvas for brainstorming and organization.',
   },
   icons: {
