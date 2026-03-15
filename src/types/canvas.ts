@@ -11,6 +11,10 @@ export type Note = {
   x: number;
   y: number;
   text: string;
+  // 'sticky' is default; 'markdown' uses title/markdown below
+  kind?: 'sticky' | 'markdown';
+  title?: string;
+  markdown?: string;
   width?: number;
   color?: NoteColor;
   rotation?: number; // degrees, e.g. -2 to 2

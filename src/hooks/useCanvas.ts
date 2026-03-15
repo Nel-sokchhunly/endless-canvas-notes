@@ -28,31 +28,34 @@ export function useCanvas() {
   }, []);
 
   const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    if (e.ctrlKey || e.metaKey) {
-      // Zoom toward cursor with smoother scaling
-      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      // Use an exponential factor based on delta for smoother zoom
-      const factor = Math.exp(-e.deltaY * 0.001);
-
-      setTransform(t => {
-        const rawScale = t.scale * factor;
-        const newScale = Math.min(Math.max(rawScale, 0.1), 5);
-        const scaleRatio = newScale / t.scale;
-
-        return {
-          scale: newScale,
-          x: mouseX - (mouseX - t.x) * scaleRatio,
-          y: mouseY - (mouseY - t.y) * scaleRatio,
-        };
-      });
-    } else {
+    // If we're not zooming, just pan
+    if (!e.ctrlKey && !e.metaKey) {
       setTransform(t => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }));
+      return;
     }
-  }, []);
+
+    // Zooming toward cursor
+    e.preventDefault();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    // Increase sensitivity: 0.005 is generally a good balance for both trackpads and mice
+    const factor = Math.exp(-e.deltaY * 0.005);
+
+    setTransform(t => {
+      const rawScale = t.scale * factor;
+      // Keep reasonable limits, but allow the calculation to feel "fast"
+      const newScale = Math.min(Math.max(rawScale, 0.05), 10);
+      const scaleRatio = newScale / t.scale;
+
+      return {
+        scale: newScale,
+        x: mouseX - (mouseX - t.x) * scaleRatio,
+        y: mouseY - (mouseY - t.y) * scaleRatio,
+      };
+    });
+  }, [setTransform]);
 
   const screenToWorld = useCallback(
     (sx: number, sy: number) => ({
