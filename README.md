@@ -5,7 +5,7 @@ An infinite canvas of draggable sticky notes with a scrolling grid background, b
 ## Features
 
 - **Infinite grid** background that pans and zooms with the viewport.
-- **Pan** with **Alt + left-drag** or **middle mouse drag**.
+- **Pan** with **Space + left-drag** or **middle mouse drag**.
 - **Zoom** with **Ctrl / Cmd + scroll**, centered around the mouse cursor.
 - **Sticky notes**:
   - Double-click empty space to create a note.
