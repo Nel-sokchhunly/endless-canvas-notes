@@ -29,8 +29,8 @@ export function useCanvas() {
   }, []);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    // Middle mouse OR Space + left click
-    if (e.button === 1 || (e.button === 0 && isSpacePressed.current)) {
+    // Space + left click
+    if (e.button === 0 && isSpacePressed.current) {
       isPanning.current = true;
       lastPos.current = { x: e.clientX, y: e.clientY };
       e.preventDefault();
