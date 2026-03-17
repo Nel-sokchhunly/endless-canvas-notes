@@ -108,7 +108,7 @@ function HelpDialog({ isOpen, onClose }: HelpDialogProps) {
               textAlign: 'center',
             }}
           >
-            MID CLICK
+            SPACE + DRAG
           </span>
           <span
             style={{

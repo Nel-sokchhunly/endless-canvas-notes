@@ -116,8 +116,8 @@ export default function Canvas() {
   );
 
   const updateNote = useCallback(
-    (id: string, text: string) => {
-      setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, text } : n)));
+    (id: string, text: string, height?: number) => {
+      setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, text, height } : n)));
     },
     [setNotes],
   );

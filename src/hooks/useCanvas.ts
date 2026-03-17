@@ -1,14 +1,36 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/store/canvasStore';
 
 export function useCanvas() {
   const { transform, setTransform, resetView } = useCanvasStore();
   const isPanning = useRef(false);
+  const isSpacePressed = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') isSpacePressed.current = true;
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') isSpacePressed.current = false;
+    };
+    const onWindowBlur = () => {
+      isSpacePressed.current = false;
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onWindowBlur);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onWindowBlur);
+    };
+  }, []);
+
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    // Middle mouse OR Alt + left click
-    if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    // Space + left click
+    if (e.button === 0 && isSpacePressed.current) {
       isPanning.current = true;
       lastPos.current = { x: e.clientX, y: e.clientY };
       e.preventDefault();
