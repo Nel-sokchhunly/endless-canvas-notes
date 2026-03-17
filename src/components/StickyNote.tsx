@@ -6,7 +6,7 @@ import { NOTE_COLORS } from '@/constants/colors';
 
 interface StickyNoteProps {
   note: Note;
-  onUpdate: (id: string, text: string) => void;
+  onUpdate: (id: string, text: string, height?: number) => void;
   onDelete: (id: string) => void;
   onColorChange: (id: string, color: NoteColor) => void;
   onDragStart: (e: React.MouseEvent, id: string) => void;
@@ -157,8 +157,9 @@ function StickyNote({
         onChange={e => {
           const el = e.currentTarget;
           el.style.height = 'auto';
-          el.style.height = `${el.scrollHeight}px`;
-          onUpdate(note.id, e.target.value);
+          const nextHeight = el.scrollHeight;
+          el.style.height = `${nextHeight}px`;
+          onUpdate(note.id, e.target.value, nextHeight);
         }}
         onMouseDown={e => e.stopPropagation()}
         rows={1}
@@ -173,6 +174,7 @@ function StickyNote({
           fontSize: 13,
           lineHeight: 1.55,
           color: color.text,
+          height: note.height ? `${note.height}px` : 'auto',
         }}
       />
 
