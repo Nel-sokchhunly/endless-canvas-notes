@@ -16,6 +16,7 @@ export type Note = {
   title?: string;
   markdown?: string;
   width?: number;
+  height?: number;
   color?: NoteColor;
   rotation?: number; // degrees, e.g. -2 to 2
   createdAt?: number; // Date.now()
