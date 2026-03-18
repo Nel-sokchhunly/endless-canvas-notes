@@ -8,9 +8,10 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmLabel?: string;
 }
 
-function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: ConfirmDialogProps) {
+function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Clear All' }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
   return (
@@ -85,7 +86,7 @@ function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }: ConfirmDi
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#ff2222')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#ff4444')}
           >
-            Clear All
+            {confirmLabel}
           </button>
         </div>
       </div>
