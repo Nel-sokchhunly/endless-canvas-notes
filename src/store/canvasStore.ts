@@ -56,6 +56,7 @@ export const useCanvasStore = create<CanvasState>()(
       name: 'canvas-store',
       // Don't persist user state to localStorage
       partialize: (state) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { user, ...rest } = state;
         return rest;
       },

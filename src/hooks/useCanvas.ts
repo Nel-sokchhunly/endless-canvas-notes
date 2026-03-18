@@ -57,20 +57,23 @@ export function useCanvas() {
     }
   }, []);
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning.current) return;
-    const dx = e.clientX - lastPos.current.x;
-    const dy = e.clientY - lastPos.current.y;
-    lastPos.current = { x: e.clientX, y: e.clientY };
-    setTransform(t => ({ ...t, x: t.x + dx, y: t.y + dy }));
-  }, []);
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isPanning.current) return;
+      const dx = e.clientX - lastPos.current.x;
+      const dy = e.clientY - lastPos.current.y;
+      lastPos.current = { x: e.clientX, y: e.clientY };
+      setTransform((t) => ({ ...t, x: t.x + dx, y: t.y + dy }));
+    },
+    [setTransform],
+  );
 
   const onMouseUp = useCallback(() => {
     isPanning.current = false;
   }, []);
 
   const animateZoom = useCallback(() => {
-    setTransform(t => {
+    setTransform((t) => {
       const target = targetScaleRef.current;
       const diff = target - t.scale;
 
@@ -90,39 +93,47 @@ export function useCanvas() {
     });
   }, [setTransform]);
 
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    if (!e.ctrlKey && !e.metaKey) {
-      setTransform(t => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }));
-      return;
-    }
-
-    e.preventDefault();
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const isDiscreteWheel =
-      e.deltaMode === 1 || (e.deltaMode === 0 && Math.abs(e.deltaY) >= MOUSE_WHEEL_DELTA_THRESHOLD);
-
-    if (isDiscreteWheel) {
-      const capped = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120);
-      const factor = Math.exp(-capped * MOUSE_WHEEL_SENSITIVITY);
-      targetScaleRef.current = clampScale(targetScaleRef.current * factor);
-      zoomCenterRef.current = { x: mouseX, y: mouseY };
-
-      if (!animFrameRef.current) {
-        animFrameRef.current = requestAnimationFrame(animateZoom);
+  const onWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) {
+        setTransform((t) => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }));
+        return;
       }
-    } else {
-      const factor = Math.exp(-e.deltaY * TRACKPAD_SENSITIVITY);
-      setTransform(t => {
-        const newScale = clampScale(t.scale * factor);
-        const ratio = newScale / t.scale;
-        targetScaleRef.current = newScale;
-        return { scale: newScale, x: mouseX - (mouseX - t.x) * ratio, y: mouseY - (mouseY - t.y) * ratio };
-      });
-    }
-  }, [setTransform, animateZoom]);
+
+      e.preventDefault();
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const isDiscreteWheel =
+        e.deltaMode === 1 ||
+        (e.deltaMode === 0 && Math.abs(e.deltaY) >= MOUSE_WHEEL_DELTA_THRESHOLD);
+
+      if (isDiscreteWheel) {
+        const capped = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120);
+        const factor = Math.exp(-capped * MOUSE_WHEEL_SENSITIVITY);
+        targetScaleRef.current = clampScale(targetScaleRef.current * factor);
+        zoomCenterRef.current = { x: mouseX, y: mouseY };
+
+        if (!animFrameRef.current) {
+          animFrameRef.current = requestAnimationFrame(animateZoom);
+        }
+      } else {
+        const factor = Math.exp(-e.deltaY * TRACKPAD_SENSITIVITY);
+        setTransform((t) => {
+          const newScale = clampScale(t.scale * factor);
+          const ratio = newScale / t.scale;
+          targetScaleRef.current = newScale;
+          return {
+            scale: newScale,
+            x: mouseX - (mouseX - t.x) * ratio,
+            y: mouseY - (mouseY - t.y) * ratio,
+          };
+        });
+      }
+    },
+    [setTransform, animateZoom],
+  );
 
   const resetView = useCallback(() => {
     if (animFrameRef.current) {
@@ -138,7 +149,7 @@ export function useCanvas() {
       x: (sx - transform.x) / transform.scale,
       y: (sy - transform.y) / transform.scale,
     }),
-    [transform]
+    [transform],
   );
 
   return {
@@ -151,4 +162,3 @@ export function useCanvas() {
     resetView,
   };
 }
-
