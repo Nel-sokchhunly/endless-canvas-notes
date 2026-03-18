@@ -13,6 +13,7 @@ import HelpDialog from './HelpDialog';
 import ConfirmDialog from './ConfirmDialog';
 import MarkdownEditor from './MarkdownEditor';
 import MarkdownNote from './MarkdownNote';
+import AuthButton from '@/components/Auth/AuthButton';
 
 const COLOR_CYCLE: NoteColor[] = ['yellow', 'blue', 'green', 'pink', 'purple'];
 
@@ -20,15 +21,8 @@ export default function Canvas() {
   const { transform, onMouseDown, onMouseMove, onMouseUp, onWheel, screenToWorld, resetView } =
     useCanvas();
 
-  const {
-    notes,
-    setNotes,
-    clearNotes,
-    noteMode,
-    setNoteMode,
-    hasSeenHint,
-    setHasSeenHint,
-  } = useCanvasStore();
+  const { notes, setNotes, clearNotes, noteMode, setNoteMode, hasSeenHint, setHasSeenHint } =
+    useCanvasStore();
 
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [isHintOpen, setIsHintOpen] = useState(false);
@@ -227,9 +221,19 @@ export default function Canvas() {
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
       onWheel={onWheel}
-      onDoubleClick={handleDoubleClick}
-    >
+      onDoubleClick={handleDoubleClick}>
       <BackgroundGrid transform={transform} />
+
+      {/* ── Auth Button ── */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 10,
+        }}>
+        <AuthButton />
+      </div>
 
       <HUD
         transform={transform}
@@ -247,8 +251,7 @@ export default function Canvas() {
           transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
           transformOrigin: '0 0',
           willChange: 'transform',
-        }}
-      >
+        }}>
         {notes.map((note) =>
           note.kind === 'markdown' ? (
             <MarkdownNote
@@ -266,8 +269,7 @@ export default function Canvas() {
             <div
               key={note.id}
               className='canvas-note'
-              style={{ position: 'relative', zIndex: note.id === activeNoteId ? 20 : 10 }}
-            >
+              style={{ position: 'relative', zIndex: note.id === activeNoteId ? 20 : 10 }}>
               <StickyNote
                 note={note}
                 onUpdate={updateNote}

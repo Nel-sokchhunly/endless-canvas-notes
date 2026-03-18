@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Note, Transform } from '@/types/canvas';
+import type { User } from '@supabase/supabase-js';
 
 type CanvasState = {
+  user: User | null;
+  setUser: (user: User | null) => void;
   transform: Transform;
   notes: Note[];
   noteMode: 'sticky' | 'markdown';
@@ -18,6 +21,8 @@ type CanvasState = {
 export const useCanvasStore = create<CanvasState>()(
   persist(
     (set) => ({
+      user: null,
+      setUser: (user) => set({ user }),
       transform: { x: 0, y: 0, scale: 1 },
       notes: [],
       noteMode: 'sticky',
@@ -49,7 +54,11 @@ export const useCanvasStore = create<CanvasState>()(
     }),
     {
       name: 'canvas-store',
+      // Don't persist user state to localStorage
+      partialize: (state) => {
+        const { user, ...rest } = state;
+        return rest;
+      },
     },
   ),
 );
-
