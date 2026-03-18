@@ -1,11 +1,26 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useCanvasStore } from '@/store/canvasStore';
 
+const MIN_SCALE = 0.05;
+const MAX_SCALE = 10;
+const ZOOM_LERP = 0.15;
+const MOUSE_WHEEL_DELTA_THRESHOLD = 50;
+const MOUSE_WHEEL_SENSITIVITY = 0.003;
+const TRACKPAD_SENSITIVITY = 0.005;
+
+function clampScale(s: number) {
+  return Math.min(Math.max(s, MIN_SCALE), MAX_SCALE);
+}
+
 export function useCanvas() {
-  const { transform, setTransform, resetView } = useCanvasStore();
+  const { transform, setTransform, resetView: storeResetView } = useCanvasStore();
   const isPanning = useRef(false);
   const isSpacePressed = useRef(false);
   const lastPos = useRef({ x: 0, y: 0 });
+
+  const targetScaleRef = useRef(transform.scale);
+  const zoomCenterRef = useRef({ x: 0, y: 0 });
+  const animFrameRef = useRef<number>(0);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -28,8 +43,13 @@ export function useCanvas() {
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
+
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    // Space + left click
     if (e.button === 0 && isSpacePressed.current) {
       isPanning.current = true;
       lastPos.current = { x: e.clientX, y: e.clientY };
@@ -49,35 +69,69 @@ export function useCanvas() {
     isPanning.current = false;
   }, []);
 
+  const animateZoom = useCallback(() => {
+    setTransform(t => {
+      const target = targetScaleRef.current;
+      const diff = target - t.scale;
+
+      if (Math.abs(diff) < 0.001) {
+        animFrameRef.current = 0;
+        if (Math.abs(diff) < 0.0001) return t;
+        const ratio = target / t.scale;
+        const { x: mx, y: my } = zoomCenterRef.current;
+        return { scale: target, x: mx - (mx - t.x) * ratio, y: my - (my - t.y) * ratio };
+      }
+
+      const newScale = clampScale(t.scale + diff * ZOOM_LERP);
+      const ratio = newScale / t.scale;
+      const { x: mx, y: my } = zoomCenterRef.current;
+      animFrameRef.current = requestAnimationFrame(animateZoom);
+      return { scale: newScale, x: mx - (mx - t.x) * ratio, y: my - (my - t.y) * ratio };
+    });
+  }, [setTransform]);
+
   const onWheel = useCallback((e: React.WheelEvent) => {
-    // If we're not zooming, just pan
     if (!e.ctrlKey && !e.metaKey) {
       setTransform(t => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }));
       return;
     }
 
-    // Zooming toward cursor
     e.preventDefault();
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    // Increase sensitivity: 0.005 is generally a good balance for both trackpads and mice
-    const factor = Math.exp(-e.deltaY * 0.005);
+    const isDiscreteWheel =
+      e.deltaMode === 1 || (e.deltaMode === 0 && Math.abs(e.deltaY) >= MOUSE_WHEEL_DELTA_THRESHOLD);
 
-    setTransform(t => {
-      const rawScale = t.scale * factor;
-      // Keep reasonable limits, but allow the calculation to feel "fast"
-      const newScale = Math.min(Math.max(rawScale, 0.05), 10);
-      const scaleRatio = newScale / t.scale;
+    if (isDiscreteWheel) {
+      const capped = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 120);
+      const factor = Math.exp(-capped * MOUSE_WHEEL_SENSITIVITY);
+      targetScaleRef.current = clampScale(targetScaleRef.current * factor);
+      zoomCenterRef.current = { x: mouseX, y: mouseY };
 
-      return {
-        scale: newScale,
-        x: mouseX - (mouseX - t.x) * scaleRatio,
-        y: mouseY - (mouseY - t.y) * scaleRatio,
-      };
-    });
-  }, [setTransform]);
+      if (!animFrameRef.current) {
+        animFrameRef.current = requestAnimationFrame(animateZoom);
+      }
+    } else {
+      const factor = Math.exp(-e.deltaY * TRACKPAD_SENSITIVITY);
+      setTransform(t => {
+        const newScale = clampScale(t.scale * factor);
+        const ratio = newScale / t.scale;
+        targetScaleRef.current = newScale;
+        return { scale: newScale, x: mouseX - (mouseX - t.x) * ratio, y: mouseY - (mouseY - t.y) * ratio };
+      });
+    }
+  }, [setTransform, animateZoom]);
+
+  const resetView = useCallback(() => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = 0;
+    }
+    targetScaleRef.current = 1;
+    storeResetView();
+  }, [storeResetView]);
 
   const screenToWorld = useCallback(
     (sx: number, sy: number) => ({
