@@ -7,7 +7,7 @@ import ConfirmDialog from '@/components/Canvas/ConfirmDialog';
 
 export default function AuthButton() {
   const supabase = createClient();
-  const { user } = useCanvasStore();
+  const { user, isSyncing } = useCanvasStore();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const handleSignIn = async () => {
@@ -29,11 +29,13 @@ export default function AuthButton() {
       <>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {user.user_metadata.avatar_url && (
-            <img
-              src={user.user_metadata.avatar_url}
-              alt={user.user_metadata.full_name || 'User'}
-              style={{ width: 24, height: 24, borderRadius: '50%', border: '1px solid #444' }}
-            />
+            <div className={`sync-indicator ${isSyncing ? 'sync-indicator--syncing' : 'sync-indicator--synced'}`}>
+              <img
+                src={user.user_metadata.avatar_url}
+                alt={user.user_metadata.full_name || 'User'}
+                style={{ width: 24, height: 24, borderRadius: '50%', display: 'block' }}
+              />
+            </div>
           )}
           <button
             onClick={() => setIsConfirmOpen(true)}
