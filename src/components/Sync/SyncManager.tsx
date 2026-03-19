@@ -7,7 +7,7 @@ import type { Note } from '@/types/canvas';
 
 export default function SyncManager() {
   const supabase = createClient();
-  const { user, setUser, notes, transform, hasSeenHint, setNotes, setTransform, setHasSeenHint } = useCanvasStore();
+  const { user, setUser, notes, transform, hasSeenHint, setNotes, setTransform, setHasSeenHint, setIsSyncing } = useCanvasStore();
   
   const isInitialLoad = useRef(true);
   const syncTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -94,6 +94,8 @@ export default function SyncManager() {
 
     if (syncTimeout.current) clearTimeout(syncTimeout.current);
 
+    setIsSyncing(true);
+
     syncTimeout.current = setTimeout(async () => {
       const notesToUpsert = notes.map(n => ({
         id: n.id,
@@ -139,12 +141,13 @@ export default function SyncManager() {
         has_seen_hint: hasSeenHint,
       });
 
+      setIsSyncing(false);
     }, 2000); // 2 second debounce
 
     return () => {
       if (syncTimeout.current) clearTimeout(syncTimeout.current);
     };
-  }, [notes, transform, hasSeenHint, user, supabase]);
+  }, [notes, transform, hasSeenHint, user, supabase, setIsSyncing]);
 
   return null; // This component doesn't render anything
 }
