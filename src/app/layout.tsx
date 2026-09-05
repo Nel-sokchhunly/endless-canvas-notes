@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import './globals.css';
 import type { Metadata } from 'next';
-import SyncManager from '@/components/Sync/SyncManager';
 
 export const metadata: Metadata = {
   title: 'Endless Notes | Infinite Sticky-Note Board',
@@ -49,7 +48,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
         }}
       >
-        <SyncManager />
         {children}
       </body>
     </html>
