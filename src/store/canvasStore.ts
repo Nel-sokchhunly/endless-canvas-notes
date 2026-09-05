@@ -1,13 +1,9 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Note, Transform } from '@/types/canvas';
-import type { User } from '@supabase/supabase-js';
+import { indexedDbStorage } from '@/utils/storage/indexedDb';
 
 type CanvasState = {
-  user: User | null;
-  setUser: (user: User | null) => void;
-  isSyncing: boolean;
-  setIsSyncing: (syncing: boolean) => void;
   transform: Transform;
   notes: Note[];
   noteMode: 'sticky' | 'markdown';
@@ -23,10 +19,6 @@ type CanvasState = {
 export const useCanvasStore = create<CanvasState>()(
   persist(
     (set) => ({
-      user: null,
-      setUser: (user) => set({ user }),
-      isSyncing: false,
-      setIsSyncing: (syncing) => set({ isSyncing: syncing }),
       transform: { x: 0, y: 0, scale: 1 },
       notes: [],
       noteMode: 'sticky',
@@ -58,12 +50,7 @@ export const useCanvasStore = create<CanvasState>()(
     }),
     {
       name: 'canvas-store',
-      // Don't persist user state to localStorage
-      partialize: (state) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { user, isSyncing, ...rest } = state;
-        return rest;
-      },
+      storage: createJSONStorage(() => indexedDbStorage),
     },
   ),
 );

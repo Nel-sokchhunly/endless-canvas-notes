@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useCanvas } from '@/hooks/useCanvas';
+import { useHasHydrated } from '@/hooks/useHasHydrated';
 import StickyNote from '@/components/StickyNote';
 import type { NoteColor } from '@/types/canvas';
 import { useCanvasStore } from '@/store/canvasStore';
@@ -13,7 +14,6 @@ import HelpDialog from './HelpDialog';
 import ConfirmDialog from './ConfirmDialog';
 import MarkdownEditor from './MarkdownEditor';
 import MarkdownNote from './MarkdownNote';
-import AuthButton from '@/components/Auth/AuthButton';
 
 const COLOR_CYCLE: NoteColor[] = ['yellow', 'blue', 'green', 'pink', 'purple'];
 
@@ -26,12 +26,9 @@ export default function Canvas() {
 
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [isHintOpen, setIsHintOpen] = useState(false);
-  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Sync hydration state
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  // True once the persisted canvas has been read back from IndexedDB
+  const isHydrated = useHasHydrated();
 
   // Auto-show hint on first visit (persisted via Zustand)
   useEffect(() => {
@@ -203,7 +200,7 @@ export default function Canvas() {
     [setNotes],
   );
 
-  // Prevent flash by not rendering until hydrated
+  // Prevent a flash of an empty canvas before the saved notes are loaded
   if (!isHydrated) return null;
 
   return (
@@ -223,17 +220,6 @@ export default function Canvas() {
       onWheel={onWheel}
       onDoubleClick={handleDoubleClick}>
       <BackgroundGrid transform={transform} />
-
-      {/* ── Auth Button ── */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 16,
-          right: 16,
-          zIndex: 10,
-        }}>
-        <AuthButton />
-      </div>
 
       <HUD
         transform={transform}
